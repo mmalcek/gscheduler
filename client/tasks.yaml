@@ -1,0 +1,12 @@
+- name: Task 2
+  description: Task2 description
+  schedule: "* * * * *"
+  enabled: true
+  timeout: 45
+  app: app1
+  args:
+    - hhahah
+    - lalalal
+  nexttask: ""
+  uuid: 590c84fb-908e-4266-b1a3-59e535243596
+  cronid: 1

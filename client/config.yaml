@@ -1,0 +1,6 @@
+server: localhost
+port: 50051
+tls: true
+ca: ../server/certs/ca/ca.crt # If empty, OS cert store is used
+client_crt: ../server/certs/client/client.crt # If emty client authentication is disabled
+client_key: ../server/certs/client/client.key

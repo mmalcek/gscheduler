@@ -1,0 +1,15 @@
+server_address: localhost
+server_port: 50051
+tasks_file: tasks.yaml
+log_folder: "./logs" # If emty logging is disabled
+log_limit: 5 # Number of log files to keep. (0 = no limit)
+ssl:
+  crt: "./certs/server/server.crt" # If empty, no SSL
+  key: "./certs/server/server.key"
+  client_cert: true # If true, client must provide valid certificate
+  ca: "./certs/ca/ca.crt" # Required only for clientCertAuthentication. If empty, OS cert store is used
+apps: # List of apps that can be scheduled
+  time@work: "./ttask/SAWTask.exe"
+  app1: "./wf90s.exe"
+  app2: "./wfErr4.exe"
+  app3: "./wf90s.exe"

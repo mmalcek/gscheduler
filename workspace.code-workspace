@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"name": "SERVER",
+			"path": "./server"
+		},
+		{
+			"name": "CLIENT",
+			"path": "./client"
+		},
+		{
+			"name": "PROTO",
+			"path": "./proto"
+		}
+	],
+	"settings": {
+		"editor.formatOnSave": true,
+		"editor.minimap.enabled": false,
+		"files.autoSave": "onFocusChange",
+		"files.eol": "\n",
+		"go.useLanguageServer": true,
+	}
+}
