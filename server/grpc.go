@@ -58,7 +58,7 @@ func grpcServer() {
 		}
 		// Create new server
 		s = grpc.NewServer(
-			grpc.MaxRecvMsgSize(1024*1024*200), // 200MB max message size (because logFiles can be big)
+			grpc.MaxSendMsgSize(1024*1024*200), // 200MB max message size (because logFiles can be big)
 			grpc.Creds(credentials.NewTLS(&tls.Config{
 				Certificates: []tls.Certificate{cert},
 				ClientAuth:   clientCert,
@@ -66,7 +66,7 @@ func grpcServer() {
 			})))
 	} else {
 		fmt.Println("TLS disabled")
-		s = grpc.NewServer(grpc.MaxRecvMsgSize(1024 * 1024 * 200)) // 200MB max message size (because logFiles can be big)
+		s = grpc.NewServer(grpc.MaxSendMsgSize(1024 * 1024 * 200)) // 200MB max message size (because logFiles can be big)
 	}
 
 	pb.RegisterTaskManagerServer(s, &server{})
