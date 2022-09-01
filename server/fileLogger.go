@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -13,6 +14,8 @@ import (
 )
 
 const TASK_LOG_NAME = "log_20060102.yaml"
+
+var tasksLogFile *os.File
 
 func taskLogToFile(logData *pb.TaskLog) error {
 	if config.LogFolder != "" {
@@ -35,9 +38,8 @@ func taskLogToFile(logData *pb.TaskLog) error {
 			}
 		} else {
 			if _, err := os.Stat(config.LogFolder); errors.Is(err, os.ErrNotExist) {
-				err := os.Mkdir(config.LogFolder, os.ModePerm)
-				if err != nil {
-					logger.Error(err)
+				if err := os.Mkdir(config.LogFolder, os.ModePerm); err != nil {
+					return err
 				}
 			}
 			if tasksLogFile, err = os.OpenFile(filepath.Join(config.LogFolder, fileName), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); err != nil {
@@ -55,7 +57,7 @@ func deleteTasksLogFiles() {
 	}
 	files, err := os.ReadDir(config.LogFolder)
 	if err != nil {
-		logger.Error(err)
+		logger.Error(fmt.Errorf("deleteTasksLogFiles-ReadDir: %s", err.Error()))
 	}
 	allFiles := make([]string, 0)
 	for i := range files {
@@ -74,7 +76,7 @@ func deleteTasksLogFiles() {
 		for _, file := range allFiles[:len(allFiles)-config.LogLimit] {
 			err := os.Remove(filepath.Join(config.LogFolder, file))
 			if err != nil {
-				logger.Error(err)
+				logger.Error(fmt.Errorf("deleteTasksLogFiles-Remove: %s", err.Error()))
 			}
 		}
 	}

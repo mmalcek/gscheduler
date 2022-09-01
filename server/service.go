@@ -15,9 +15,8 @@ var (
 	scheduler     = tCron{cron: cron.New(cron.WithChain(cron.SkipIfStillRunning(cron.DefaultLogger)))}
 	tasks         = &tTasks{tasks: make([]*pb.Task, 0)}
 	tasksCTX      = tTasksCtxMap{taskCtx: make(map[string]*tTaskState, 0)}
-	logWatchChans = tSyncChanMap{channels: make(map[string]chan interface{})} // Send taskLog to this chan
 	taskLog       = make(chan *pb.TaskLog, 100)
-	tasksLogFile  *os.File
+	logWatchChans = tSyncChanMap{channels: make(map[string]chan interface{})} // Send taskLog to this chan
 )
 
 func (p *program) run() {

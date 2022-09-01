@@ -72,7 +72,7 @@ func (cr *tCron) addTask(task *pb.Task) (cronid int64, err error) {
 	if !task.GetEnabled() {
 		return 0, nil // Task is disabled
 	}
-	fmt.Println("Adding task:", task.GetName()) // TODO - remove
+	// fmt.Println("Adding task:", task.GetName())
 	id, err := cr.cron.AddFunc(task.GetSchedule(), cr.taskJob(task))
 	if err != nil {
 		return 0, err

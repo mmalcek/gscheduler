@@ -12,17 +12,14 @@ type (
 	program struct {
 		exit chan struct{}
 	}
+	tFlags struct {
+		svc        *string
+		genCrt     *string
+		serverName *string
+	}
 )
 
-var (
-	logger service.Logger
-)
-
-type tFlags struct {
-	svc        *string
-	genCrt     *string
-	serverName *string
-}
+var logger service.Logger
 
 func main() {
 	flags := tFlags{}

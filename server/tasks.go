@@ -129,7 +129,6 @@ func (tsk *tTasks) stop(tuuid string, force bool) error {
 				log := <-logWatchChans.get(chanUUID)
 				if log.(*pb.TaskLog).Uuid == tuuid {
 					if (log.(*pb.TaskLog).Type == "info" && log.(*pb.TaskLog).Message == "done") || log.(*pb.TaskLog).Type == "error" {
-						fmt.Println("TASK DONE") // TODO remove
 						break
 					}
 				}
@@ -208,11 +207,11 @@ func (tsk *tTasks) delete(uuid string) error {
 func (tsk *tTasks) saveTasks() {
 	tasksData, err := yaml.Marshal(tsk.tasks)
 	if err != nil {
-		log.Fatalf("ERR-taskFileMarshal: %s", err.Error())
+		log.Fatalf("taskFileMarshal: %s", err.Error())
 	}
 	err = os.WriteFile(config.TasksFile, tasksData, 0644)
 	if err != nil {
-		log.Fatalf("ERR-taskFileWrite: %s", err.Error())
+		log.Fatalf("taskFileWrite: %s", err.Error())
 	}
 }
 
@@ -222,11 +221,11 @@ func (tsk *tTasks) saveTasksMutex() {
 	defer tsk.mutex.Unlock()
 	tasksData, err := yaml.Marshal(tsk.tasks)
 	if err != nil {
-		log.Fatalf("ERR-taskFileMarshal: %s", err.Error())
+		log.Fatalf("taskFileMarshal: %s", err.Error())
 	}
 	err = os.WriteFile(config.TasksFile, tasksData, 0644)
 	if err != nil {
-		log.Fatalf("ERR-taskFileWrite: %s", err.Error())
+		log.Fatalf("taskFileWrite: %s", err.Error())
 	}
 }
 
@@ -315,7 +314,7 @@ func (tsk *tTasks) validateUUID(uuid string) error {
 		return err
 	}
 	if !matchUUID {
-		return fmt.Errorf("invalidUUIDformat")
+		return fmt.Errorf("errInvalidUUIDformat")
 	}
 	return nil
 }
