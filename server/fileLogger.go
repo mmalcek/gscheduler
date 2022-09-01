@@ -18,35 +18,39 @@ const TASK_LOG_NAME = "log_20060102.yaml"
 var tasksLogFile *os.File
 
 func taskLogToFile(logData *pb.TaskLog) error {
-	if config.LogFolder != "" {
-		var err error
-		fileName := time.Now().Format(TASK_LOG_NAME)
-		if tasksLogFile != nil {
-			if filepath.Join(config.LogFolder, fileName) == tasksLogFile.Name() {
-				arrLog := []*pb.TaskLog{logData}
-				yamlData, err := yaml.Marshal(arrLog)
-				if err != nil {
-					return err
-				}
-				tasksLogFile.Write(yamlData)
-			} else {
-				tasksLogFile.Close()
-				if tasksLogFile, err = os.OpenFile(filepath.Join(config.LogFolder, fileName), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); err != nil {
-					return err
-				}
-				go deleteTasksLogFiles()
+	if config.LogFolder == "" { // If no log folder, do not log to file
+		return nil
+	}
+	if !filepath.IsAbs(config.LogFolder) {
+		config.LogFolder = filepath.Join(filepath.Dir(os.Args[0]), config.LogFolder)
+	}
+	var err error
+	fileName := time.Now().Format(TASK_LOG_NAME)
+	if tasksLogFile != nil {
+		if filepath.Join(config.LogFolder, fileName) == tasksLogFile.Name() {
+			arrLog := []*pb.TaskLog{logData}
+			yamlData, err := yaml.Marshal(arrLog)
+			if err != nil {
+				return err
 			}
+			tasksLogFile.Write(yamlData)
 		} else {
-			if _, err := os.Stat(config.LogFolder); errors.Is(err, os.ErrNotExist) {
-				if err := os.Mkdir(config.LogFolder, os.ModePerm); err != nil {
-					return err
-				}
-			}
+			tasksLogFile.Close()
 			if tasksLogFile, err = os.OpenFile(filepath.Join(config.LogFolder, fileName), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); err != nil {
 				return err
 			}
 			go deleteTasksLogFiles()
 		}
+	} else {
+		if _, err := os.Stat(config.LogFolder); errors.Is(err, os.ErrNotExist) {
+			if err := os.Mkdir(config.LogFolder, os.ModePerm); err != nil {
+				return err
+			}
+		}
+		if tasksLogFile, err = os.OpenFile(filepath.Join(config.LogFolder, fileName), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); err != nil {
+			return err
+		}
+		go deleteTasksLogFiles()
 	}
 	return nil
 }

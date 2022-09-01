@@ -25,20 +25,19 @@ func (tsk *tTasks) load() error {
 	tsk.mutex.Lock()
 	defer tsk.mutex.Unlock()
 	// Create file if not exists
-	tasksFile := config.TasksFile
-	if tasksFile == "" {
-		tasksFile = filepath.Join(filepath.Dir(os.Args[0]), "tasks.yaml")
+	if config.TasksFile == "" {
+		config.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), "tasks.yaml")
 	}
-	if !filepath.IsAbs(tasksFile) {
-		tasksFile = filepath.Join(filepath.Dir(os.Args[0]), tasksFile)
+	if !filepath.IsAbs(config.TasksFile) {
+		config.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), config.TasksFile)
 	}
-	if _, err := os.Stat(tasksFile); os.IsNotExist(err) {
-		if _, err := os.Create(tasksFile); err != nil {
+	if _, err := os.Stat(config.TasksFile); os.IsNotExist(err) {
+		if _, err := os.Create(config.TasksFile); err != nil {
 			return fmt.Errorf("createFile: %v", err.Error())
 		}
 	}
 	// Load tasks from file
-	configData, err := os.ReadFile(tasksFile)
+	configData, err := os.ReadFile(config.TasksFile)
 	if err != nil {
 		return fmt.Errorf("openFile: %v", err.Error())
 	}
