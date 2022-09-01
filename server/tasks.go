@@ -83,11 +83,13 @@ func (tsk *tTasks) create(task *pb.Task) (taskUUID string, err error) {
 	if err := tsk.validateInput(task); err != nil {
 		return "", fmt.Errorf("validateInput: %s", err.Error())
 	}
-	for i := range tsk.tasks {
-		if tsk.tasks[i].GetName() == task.GetName() {
-			return "", fmt.Errorf("taskNameExists")
+	/*
+		for i := range tsk.tasks {
+			if tsk.tasks[i].GetName() == task.GetName() {
+				return "", fmt.Errorf("taskNameExists")
+			}
 		}
-	}
+	*/
 	task.Uuid = uuid.New().String()
 	task.CronId = 0
 	task.Enabled = false
@@ -160,11 +162,13 @@ func (tsk *tTasks) update(task *pb.Task) error {
 	if err := tsk.validateInput(task); err != nil {
 		return fmt.Errorf("validateInput: %s, err: %s", task.GetName(), err.Error())
 	}
-	for i := range tsk.tasks {
-		if tsk.tasks[i].GetName() == task.GetName() && tsk.tasks[i].GetUuid() != task.GetUuid() {
-			return fmt.Errorf("taskNameExists")
+	/*
+		for i := range tsk.tasks {
+			if tsk.tasks[i].GetName() == task.GetName() && tsk.tasks[i].GetUuid() != task.GetUuid() {
+				return fmt.Errorf("taskNameExists")
+			}
 		}
-	}
+	*/
 	for i := range tsk.tasks {
 		if tsk.tasks[i].GetUuid() == task.GetUuid() {
 			// Caller should stop task first and decide to let task finish or force stop
