@@ -5,12 +5,9 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"path/filepath"
-	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	pb "github.com/mmalcek/gscheduler/proto/go"
@@ -28,14 +25,16 @@ func grpcServer() {
 	var s *grpc.Server
 	lis, err := net.Listen("tcp", net.JoinHostPort(config.ServerAddress, config.ServerPort))
 	if err != nil {
-		log.Fatalf("grpcServer-Listen: %v", err)
+		logger.Errorf("grpcServer-Listen: %v", err)
+		os.Exit(1)
 	}
 
 	if config.SSL.CRT != "" && config.SSL.KEY != "" {
 		fmt.Println("TLS enabled")
 		cert, err := tls.LoadX509KeyPair(config.SSL.CRT, config.SSL.KEY)
 		if err != nil {
-			log.Fatal("grpcServer-LoadX509KeyPair: ", err.Error())
+			logger.Errorf("grpcServer-LoadX509KeyPair: ", err.Error())
+			os.Exit(1)
 		}
 
 		// Choose client authentication method
@@ -44,16 +43,18 @@ func grpcServer() {
 			clientCert = tls.ClientAuthType(tls.RequireAndVerifyClientCert)
 		}
 
-		// Load CA certificate. If no certificate is provided, server will use OS sertStore.
+		// Load CA certificate. If no certificate is provided, server will use OS certStore.
 		var certPool *x509.CertPool
 		if config.SSL.CA != "" {
 			caCert, err := os.ReadFile(config.SSL.CA)
 			if err != nil {
-				log.Fatal("grpcServer-readCertFile: ", err.Error())
+				logger.Errorf("grpcServer-readCertFile: ", err.Error())
+				os.Exit(1)
 			}
 			certPool = x509.NewCertPool()
 			if ok := certPool.AppendCertsFromPEM(caCert); !ok {
-				log.Fatal("grpcServer-certificateError")
+				logger.Errorf("grpcServer-certificateError")
+				os.Exit(1)
 			}
 		}
 		// Create new server
@@ -70,9 +71,10 @@ func grpcServer() {
 	}
 
 	pb.RegisterTaskManagerServer(s, &server{})
-	log.Printf("Starting gRPC server: %v", net.JoinHostPort(config.ServerAddress, config.ServerPort))
+	logger.Infof("Starting gRPC server: %v", net.JoinHostPort(config.ServerAddress, config.ServerPort))
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("grpcServer-failedToStart: %v", err)
+		logger.Errorf("grpcServer-failedToStart: %s", err.Error())
+		os.Exit(1)
 	}
 }
 
@@ -110,6 +112,7 @@ func (s *server) TaskDelete(ctx context.Context, task *pb.TaskUUID) (*pb.Status,
 	return &pb.Status{Message: "success", Uuid: task.GetUuid()}, nil
 }
 
+// Stop task (Force = true will kill the task)
 func (s *server) TaskStop(ctx context.Context, in *pb.TaskUUID) (*pb.Status, error) {
 	if err := tasks.stop(in.GetUuid(), in.GetForce()); err != nil {
 		return &pb.Status{Message: "failed", Uuid: in.GetUuid()}, status.Newf(codes.Unknown, err.Error()).Err()
@@ -117,6 +120,7 @@ func (s *server) TaskStop(ctx context.Context, in *pb.TaskUUID) (*pb.Status, err
 	return &pb.Status{Message: "success", Uuid: in.GetUuid()}, nil
 }
 
+// Start task
 func (s *server) TaskStart(ctx context.Context, in *pb.TaskUUID) (*pb.Status, error) {
 	if err := tasks.start(in.GetUuid()); err != nil {
 		return &pb.Status{Message: "failed", Uuid: in.GetUuid()}, status.Newf(codes.Unknown, err.Error()).Err()
@@ -160,6 +164,7 @@ func (s *server) SchedulerStart(ctx context.Context, in *pb.Empty) (*pb.Status, 
 	return &pb.Status{Message: "success"}, nil
 }
 
+// Watch all tasks events as they happen (stream)
 func (s *server) SchedulerWatch(in *pb.Empty, stream pb.TaskManager_SchedulerWatchServer) error {
 	chanUUID := uuid.New().String()
 	logWatchChans.add(chanUUID, 0)
@@ -185,43 +190,21 @@ func (s *server) SchedulerRunningTasks(ctx context.Context, in *pb.Empty) (*pb.L
 	return &pb.List{Data: tsk}, nil
 }
 
+// Exec single command without using scheduler
 func (s *server) ExecCmd(ctx context.Context, in *pb.Task) (*pb.ExecStatus, error) {
 	return execCommand(in)
 }
 
+// List all logFiles (returns datemarks 20060102)
 func (s *server) LogList(ctx context.Context, in *pb.Empty) (*pb.List, error) {
 	return logListCreate()
 }
 
+// Get logFile. Expects datemark 20060102
 func (s *server) LogGet(ctx context.Context, in *pb.Request) (*pb.File, error) {
 	file, err := os.ReadFile(filepath.Join(config.LogFolder, fmt.Sprintf("log_%s.yaml", in.GetMsg())))
 	if err != nil {
 		return nil, status.Newf(codes.NotFound, "fileNotFound").Err()
 	}
 	return &pb.File{Content: file}, nil
-}
-
-func logListCreate() (list *pb.List, err error) {
-	if config.LogFolder != "" {
-		list = &pb.List{}
-		files, err := os.ReadDir(config.LogFolder)
-		if err != nil {
-			return nil, err
-		}
-		for i := range files {
-			if files[i].IsDir() {
-				continue
-			}
-			if strings.Split(files[i].Name(), "_")[0] == "log" {
-				_, err := time.Parse(TASK_LOG_NAME, files[i].Name())
-				if err != nil { // Not a date file
-					continue
-				}
-				list.Data = append(
-					list.Data,
-					strings.Replace(strings.Replace(files[i].Name(), ".yaml", "", 1), "log_", "", 1))
-			}
-		}
-	}
-	return list, nil
 }

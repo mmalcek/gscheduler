@@ -55,6 +55,7 @@ func taskLogToFile(logData *pb.TaskLog) error {
 	return nil
 }
 
+// Delete log files older than config.LogLimit when date change or when app strats
 func deleteTasksLogFiles() {
 	if config.LogLimit < 1 {
 		return // No limit
@@ -84,4 +85,30 @@ func deleteTasksLogFiles() {
 			}
 		}
 	}
+}
+
+// Create list of log files
+func logListCreate() (list *pb.List, err error) {
+	if config.LogFolder != "" {
+		list = &pb.List{}
+		files, err := os.ReadDir(config.LogFolder)
+		if err != nil {
+			return nil, err
+		}
+		for i := range files {
+			if files[i].IsDir() {
+				continue
+			}
+			if strings.Split(files[i].Name(), "_")[0] == "log" {
+				_, err := time.Parse(TASK_LOG_NAME, files[i].Name())
+				if err != nil { // Not a date file
+					continue
+				}
+				list.Data = append(
+					list.Data,
+					strings.Replace(strings.Replace(files[i].Name(), ".yaml", "", 1), "log_", "", 1))
+			}
+		}
+	}
+	return list, nil
 }

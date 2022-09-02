@@ -25,7 +25,7 @@ func (p *program) run() {
 		p.Stop(nil)
 		os.Exit(1)
 	}
-	go tasksLogWatch(taskLog) // Watch taskLog (stdOut,stdErr) channel and send taskLog to logWatchChans
+	go tasksLogWatch(taskLog) // Watch tasks (stdOut,stdErr) channel. Send to logWatchChans and write to fileLog
 	if err := tasks.load(); err != nil {
 		logger.Errorf("loadTasks: %v", err.Error())
 		p.Stop(nil)
