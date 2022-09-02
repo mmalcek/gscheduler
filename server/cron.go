@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"os/exec"
 	"sync"
 	"time"
@@ -108,9 +107,8 @@ func (cr *tCron) taskJob(task *pb.Task) func() {
 			return
 		}
 		taskLog <- genMsg(task, "started", "info")
-		log.Println("Running task:", task.GetName()) // TODO - remove
 
-		// Read stdout and stderr - and wait for task to finish
+		// Read stdout and stderr - and wait for task finish
 		var errStdout, errStderr error
 		var wg sync.WaitGroup
 		wg.Add(1)
@@ -146,11 +144,11 @@ func (cr *tCron) taskJob(task *pb.Task) func() {
 				return
 			}
 			if nextTask.GetEnabled() {
-				taskLog <- genMsg(task, "nextTaskDisabled", "error") // nextTask must be disabled from schedule
+				taskLog <- genMsg(task, "nextTaskEnabled", "error") // nextTask must be disabled from schedule
 				return
 			}
 			taskLog <- genMsg(task, "done", "info")
-			cr.taskJob(nextTask)() // Main task will finish once "nextTask" is done
+			cr.taskJob(nextTask)() // Main task will finish (defer tasksCTX.cancel(task.GetUuid())) once "nextTask" is done
 			return
 		}
 		taskLog <- genMsg(task, "done", "info")
@@ -174,7 +172,6 @@ func parseStdErrOut(r io.Reader, task *pb.Task, msgType string) error {
 }
 
 // Send all task events to all active listeners
-// TODO - add logging to file
 func tasksLogWatch(event chan *pb.TaskLog) {
 	for {
 		data := <-event
