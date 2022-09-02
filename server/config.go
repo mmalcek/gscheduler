@@ -46,5 +46,23 @@ func getConfigFile() error {
 	if err := yaml.Unmarshal(configData, &config); err != nil {
 		return err
 	}
+
 	return nil
+}
+
+func fixConfigPaths() {
+	if config.TasksFile == "" {
+		config.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), "tasks.yaml")
+	}
+	if !filepath.IsAbs(config.TasksFile) {
+		config.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), config.TasksFile)
+	}
+	if !filepath.IsAbs(config.LogFolder) {
+		config.LogFolder = filepath.Join(filepath.Dir(os.Args[0]), config.LogFolder)
+	}
+	for k, v := range config.Apps {
+		if !filepath.IsAbs(v) {
+			config.Apps[k] = filepath.Join(filepath.Dir(os.Args[0]), v)
+		}
+	}
 }

@@ -21,10 +21,10 @@ var (
 
 func (p *program) run() {
 	if err := configInit(); err != nil {
-		logger.Errorf("loadConfig: %v", err)
-		p.Stop(nil)
-		os.Exit(1)
+		logger.Errorf("configInitFailed: %s\r\nStarting with default configuration", err.Error())
 	}
+	fixConfigPaths() // Fix paths in config (relative to absolute)
+
 	go tasksLogWatch(taskLog) // Watch tasks (stdOut,stdErr) channel. Send to logWatchChans and write to fileLog
 	if err := tasks.load(); err != nil {
 		logger.Errorf("loadTasks: %v", err.Error())

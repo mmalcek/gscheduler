@@ -21,9 +21,6 @@ func taskLogToFile(logData *pb.TaskLog) error {
 	if config.LogFolder == "" { // If no log folder, do not log to file
 		return nil
 	}
-	if !filepath.IsAbs(config.LogFolder) {
-		config.LogFolder = filepath.Join(filepath.Dir(os.Args[0]), config.LogFolder)
-	}
 	var err error
 	fileName := time.Now().Format(TASK_LOG_NAME)
 	if tasksLogFile != nil {

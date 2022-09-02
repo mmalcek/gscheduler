@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"regexp"
 	"sync"
 
@@ -25,12 +24,6 @@ func (tsk *tTasks) load() error {
 	tsk.mutex.Lock()
 	defer tsk.mutex.Unlock()
 	// Create file if not exists
-	if config.TasksFile == "" {
-		config.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), "tasks.yaml")
-	}
-	if !filepath.IsAbs(config.TasksFile) {
-		config.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), config.TasksFile)
-	}
 	if _, err := os.Stat(config.TasksFile); os.IsNotExist(err) {
 		if _, err := os.Create(config.TasksFile); err != nil {
 			return fmt.Errorf("createFile: %v", err.Error())
@@ -51,9 +44,6 @@ func (tsk *tTasks) load() error {
 		}
 		if err := tasks.validateUUID(tsk.tasks[i].Uuid); err != nil {
 			return fmt.Errorf("taskUUID: %s, err: %s", tsk.tasks[i].GetName(), err.Error())
-		}
-		if !filepath.IsAbs(config.Apps[tsk.tasks[i].App]) {
-			config.Apps[tsk.tasks[i].App] = filepath.Join(filepath.Dir(os.Args[0]), config.Apps[tsk.tasks[i].App])
 		}
 		fmt.Println(config.Apps[tsk.tasks[i].App])
 	}
