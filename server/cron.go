@@ -117,12 +117,16 @@ func (cr *tCron) taskJob(task *pb.Task) func() {
 			wg.Done()
 		}()
 		errStderr = parseStdErrOut(stderrIn, task, "stderr")
+
+		taskFinishOK := false // If task fails - do not continue with next tasks
 		wg.Wait()
 		if err = cmd.Wait(); err != nil {
 			taskLog <- genMsg(task, err.Error(), "exitStatus") // Maybe replace err.(*exec.ExitError).ExitCode()
 		} else {
+			taskFinishOK = true
 			taskLog <- genMsg(task, "exit status 0", "exitStatus")
 		}
+
 		if errStdout != nil {
 			taskLog <- genMsg(task, fmt.Sprintf("stdOutParse: %v", errStdout.Error()), "error")
 			return
@@ -137,7 +141,7 @@ func (cr *tCron) taskJob(task *pb.Task) func() {
 		}
 
 		// If next task is set validate and run it
-		if task.GetNextTask() != "" {
+		if taskFinishOK && task.GetNextTask() != "" {
 			nextTask := tasks.get(task.GetNextTask())
 			if nextTask == nil {
 				taskLog <- genMsg(task, "nextTaskNotFound", "error")
