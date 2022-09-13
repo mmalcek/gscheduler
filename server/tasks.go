@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"sync"
+	"time"
 
 	"gopkg.in/yaml.v3"
 
@@ -105,6 +106,7 @@ func (tsk *tTasks) start(uuid string) error {
 				return fmt.Errorf("addTask: %s, err: %s", tsk.tasks[i].Uuid, err.Error())
 			}
 			tsk.saveTasks()
+			taskLog <- &pb.TaskLog{Name: tsk.tasks[i].Name, SysDescription: tsk.tasks[i].SysDescription, Uuid: tsk.tasks[i].Uuid, Message: "taskStart", Type: "sys", Timestamp: time.Now().UnixMicro()}
 			return nil
 		}
 	}
@@ -114,19 +116,19 @@ func (tsk *tTasks) start(uuid string) error {
 func (tsk *tTasks) stop(tuuid string, force bool) error {
 	// if task running (has context) stop first. force=kill immediately
 	if tasksCTX.get(tuuid) != nil {
-		if force {
-			tasksCTX.get(tuuid).cancel()
-		} else if tasksCTX.get(tuuid) != nil {
-			chanUUID := uuid.New().String()
-			logWatchChans.add(chanUUID, 0)
-			defer logWatchChans.delete(chanUUID)
-			for {
-				log := <-logWatchChans.get(chanUUID)
-				if log.(*pb.TaskLog).Uuid == tuuid {
-					if (log.(*pb.TaskLog).Type == "info" && log.(*pb.TaskLog).Message == "done") || log.(*pb.TaskLog).Type == "error" {
-						break
-					}
+		if force { // Find the task in chain that is currently running and kill it
+			lastTask := tsk.get(tuuid)
+			for lastTask.NextTask != "" && tasksCTX.get(lastTask.NextTask) != nil {
+				lastTask = tsk.get(lastTask.NextTask)
+			}
+			tasksCTX.get(lastTask.Uuid).cancel()
+		} else { // wait in loop until task is finished
+			taskRunning := true
+			for taskRunning {
+				if tasksCTX.get(tuuid) == nil {
+					taskRunning = false
 				}
+				time.Sleep(200 * time.Millisecond)
 			}
 		}
 	}
@@ -142,6 +144,7 @@ func (tsk *tTasks) stop(tuuid string, force bool) error {
 			tsk.tasks[i].CronId = 0
 			tsk.tasks[i].Enabled = false
 			tsk.saveTasks()
+			taskLog <- &pb.TaskLog{Name: tsk.tasks[i].Name, SysDescription: tsk.tasks[i].SysDescription, Uuid: tsk.tasks[i].Uuid, Message: "taskStop", Type: "sys", Timestamp: time.Now().UnixMicro()}
 			return nil
 		}
 	}

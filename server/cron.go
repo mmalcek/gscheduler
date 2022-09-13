@@ -131,17 +131,16 @@ func (cr *tCron) taskJob(task *pb.Task) func() {
 			taskLog <- genMsg(task, fmt.Sprintf("taskContext: %s", tasksCTX.get(task.GetUuid()).ctx.Err().Error()), "error")
 			return
 		}
-
+		taskFinishOK := false // Run next task only if previous task finished OK
 		if err = cmd.Wait(); err != nil {
 			taskLog <- genMsg(task, err.Error(), "exitStatus") // Maybe replace err.(*exec.ExitError).ExitCode()
-			taskLog <- genMsg(task, "done", "info")
-			return
 		} else {
+			taskFinishOK = true
 			taskLog <- genMsg(task, "exit status 0", "exitStatus")
 		}
 
 		// If next task is set validate and run it
-		if task.GetNextTask() != "" {
+		if taskFinishOK && task.GetNextTask() != "" {
 			nextTask := tasks.get(task.GetNextTask())
 			if nextTask == nil {
 				taskLog <- genMsg(task, "nextTaskNotFound", "error")
