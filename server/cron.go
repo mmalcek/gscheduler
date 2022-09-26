@@ -94,6 +94,9 @@ func (cr *tCron) taskJob(task *pb.Task) func() {
 		// Run task with context
 		cmd := exec.CommandContext(tasksCTX.get(task.GetUuid()).ctx, config.Apps[task.GetApp()], task.GetArgs()...)
 		cmd.Dir = filepath.Dir(config.Apps[task.GetApp()]) // Set working directory to app path
+		if task.GetWorkDir() != "" {                       // If working directory is set - use it
+			cmd.Dir = task.GetWorkDir()
+		}
 		stdoutIn, err := cmd.StdoutPipe()
 		if err != nil {
 			taskLog <- genMsg(task, fmt.Sprintf("stdoutPipe: %v", err.Error()), "error")
@@ -192,12 +195,12 @@ func tasksLogWatch(event chan *pb.TaskLog) {
 
 func genMsg(task *pb.Task, msg string, msgType string) *pb.TaskLog {
 	return &pb.TaskLog{
-		Name:           task.GetName(),
-		SysDescription: task.GetSysDescription(),
-		Uuid:           task.GetUuid(),
-		Message:        msg,
-		Type:           msgType,
-		Timestamp:      time.Now().UnixMicro(),
+		Name:      task.GetName(),
+		Tags:      task.GetTags(),
+		Uuid:      task.GetUuid(),
+		Message:   msg,
+		Type:      msgType,
+		Timestamp: time.Now().UnixMicro(),
 	}
 }
 
@@ -211,13 +214,13 @@ func execCommand(request *pb.Task) (*pb.ExecStatus, error) {
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 	if err := cmd.Start(); err != nil {
-		taskLog <- &pb.TaskLog{Name: "execCmd", SysDescription: request.GetSysDescription(), Message: err.Error(), Type: "error", Timestamp: time.Now().UnixMicro()}
+		taskLog <- &pb.TaskLog{Name: "execCmd", Tags: request.GetTags(), Message: err.Error(), Type: "error", Timestamp: time.Now().UnixMicro()}
 		return &pb.ExecStatus{Stdout: "", Stderr: err.Error(), ExitCode: -1}, err
 	}
 	exitCode := 0
 	if err := cmd.Wait(); err != nil {
 		exitCode = err.(*exec.ExitError).ExitCode()
 	}
-	taskLog <- &pb.TaskLog{Name: "execCmd", SysDescription: request.GetSysDescription(), Message: "done", Type: "info", Timestamp: time.Now().UnixMicro()}
+	taskLog <- &pb.TaskLog{Name: "execCmd", Tags: request.GetTags(), Message: "done", Type: "info", Timestamp: time.Now().UnixMicro()}
 	return &pb.ExecStatus{Stdout: outb.String(), Stderr: errb.String(), ExitCode: int64(exitCode)}, nil
 }

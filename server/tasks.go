@@ -105,7 +105,7 @@ func (tsk *tTasks) start(uuid string) error {
 				return fmt.Errorf("addTask: %s, err: %s", tsk.tasks[i].Uuid, err.Error())
 			}
 			tsk.saveTasks()
-			taskLog <- &pb.TaskLog{Name: tsk.tasks[i].Name, SysDescription: tsk.tasks[i].SysDescription, Uuid: tsk.tasks[i].Uuid, Message: "taskStart", Type: "sys", Timestamp: time.Now().UnixMicro()}
+			taskLog <- &pb.TaskLog{Name: tsk.tasks[i].Name, Tags: tsk.tasks[i].Tags, Uuid: tsk.tasks[i].Uuid, Message: "taskStart", Type: "sys", Timestamp: time.Now().UnixMicro()}
 			return nil
 		}
 	}
@@ -143,7 +143,7 @@ func (tsk *tTasks) stop(tuuid string, force bool) error {
 			tsk.tasks[i].CronId = 0
 			tsk.tasks[i].Enabled = false
 			tsk.saveTasks()
-			taskLog <- &pb.TaskLog{Name: tsk.tasks[i].Name, SysDescription: tsk.tasks[i].SysDescription, Uuid: tsk.tasks[i].Uuid, Message: "taskStop", Type: "sys", Timestamp: time.Now().UnixMicro()}
+			taskLog <- &pb.TaskLog{Name: tsk.tasks[i].Name, Tags: tsk.tasks[i].Tags, Uuid: tsk.tasks[i].Uuid, Message: "taskStop", Type: "sys", Timestamp: time.Now().UnixMicro()}
 			return nil
 		}
 	}

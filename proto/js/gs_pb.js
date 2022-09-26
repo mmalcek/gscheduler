@@ -804,7 +804,7 @@ proto.gscheduler.Empty.serializeBinaryToWriter = function(message, writer) {
  * @private {!Array<number>}
  * @const
  */
-proto.gscheduler.Task.repeatedFields_ = [7];
+proto.gscheduler.Task.repeatedFields_ = [8];
 
 
 
@@ -843,11 +843,12 @@ proto.gscheduler.Task.toObject = function(includeInstance, msg) {
     schedule: jspb.Message.getFieldWithDefault(msg, 4, ""),
     timeout: jspb.Message.getFieldWithDefault(msg, 5, 0),
     app: jspb.Message.getFieldWithDefault(msg, 6, ""),
-    argsList: (f = jspb.Message.getRepeatedField(msg, 7)) == null ? undefined : f,
-    nextTask: jspb.Message.getFieldWithDefault(msg, 8, ""),
-    uuid: jspb.Message.getFieldWithDefault(msg, 9, ""),
-    cronId: jspb.Message.getFieldWithDefault(msg, 10, 0),
-    enabled: jspb.Message.getBooleanFieldWithDefault(msg, 11, false)
+    workDir: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    argsList: (f = jspb.Message.getRepeatedField(msg, 8)) == null ? undefined : f,
+    nextTask: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    uuid: jspb.Message.getFieldWithDefault(msg, 10, ""),
+    cronId: jspb.Message.getFieldWithDefault(msg, 11, 0),
+    enabled: jspb.Message.getBooleanFieldWithDefault(msg, 12, false)
   };
 
   if (includeInstance) {
@@ -912,21 +913,25 @@ proto.gscheduler.Task.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 7:
       var value = /** @type {string} */ (reader.readString());
-      msg.addArgs(value);
+      msg.setWorkDir(value);
       break;
     case 8:
       var value = /** @type {string} */ (reader.readString());
-      msg.setNextTask(value);
+      msg.addArgs(value);
       break;
     case 9:
       var value = /** @type {string} */ (reader.readString());
-      msg.setUuid(value);
+      msg.setNextTask(value);
       break;
     case 10:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setUuid(value);
+      break;
+    case 11:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setCronId(value);
       break;
-    case 11:
+    case 12:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setEnabled(value);
       break;
@@ -998,38 +1003,45 @@ proto.gscheduler.Task.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getWorkDir();
+  if (f.length > 0) {
+    writer.writeString(
+      7,
+      f
+    );
+  }
   f = message.getArgsList();
   if (f.length > 0) {
     writer.writeRepeatedString(
-      7,
+      8,
       f
     );
   }
   f = message.getNextTask();
   if (f.length > 0) {
     writer.writeString(
-      8,
+      9,
       f
     );
   }
   f = message.getUuid();
   if (f.length > 0) {
     writer.writeString(
-      9,
+      10,
       f
     );
   }
   f = message.getCronId();
   if (f !== 0) {
     writer.writeInt64(
-      10,
+      11,
       f
     );
   }
   f = message.getEnabled();
   if (f) {
     writer.writeBool(
-      11,
+      12,
       f
     );
   }
@@ -1149,11 +1161,29 @@ proto.gscheduler.Task.prototype.setApp = function(value) {
 
 
 /**
- * repeated string args = 7;
+ * optional string work_dir = 7;
+ * @return {string}
+ */
+proto.gscheduler.Task.prototype.getWorkDir = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.gscheduler.Task} returns this
+ */
+proto.gscheduler.Task.prototype.setWorkDir = function(value) {
+  return jspb.Message.setProto3StringField(this, 7, value);
+};
+
+
+/**
+ * repeated string args = 8;
  * @return {!Array<string>}
  */
 proto.gscheduler.Task.prototype.getArgsList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 7));
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 8));
 };
 
 
@@ -1162,7 +1192,7 @@ proto.gscheduler.Task.prototype.getArgsList = function() {
  * @return {!proto.gscheduler.Task} returns this
  */
 proto.gscheduler.Task.prototype.setArgsList = function(value) {
-  return jspb.Message.setField(this, 7, value || []);
+  return jspb.Message.setField(this, 8, value || []);
 };
 
 
@@ -1172,7 +1202,7 @@ proto.gscheduler.Task.prototype.setArgsList = function(value) {
  * @return {!proto.gscheduler.Task} returns this
  */
 proto.gscheduler.Task.prototype.addArgs = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 7, value, opt_index);
+  return jspb.Message.addToRepeatedField(this, 8, value, opt_index);
 };
 
 
@@ -1186,28 +1216,10 @@ proto.gscheduler.Task.prototype.clearArgsList = function() {
 
 
 /**
- * optional string next_task = 8;
+ * optional string next_task = 9;
  * @return {string}
  */
 proto.gscheduler.Task.prototype.getNextTask = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.gscheduler.Task} returns this
- */
-proto.gscheduler.Task.prototype.setNextTask = function(value) {
-  return jspb.Message.setProto3StringField(this, 8, value);
-};
-
-
-/**
- * optional string uuid = 9;
- * @return {string}
- */
-proto.gscheduler.Task.prototype.getUuid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
 };
 
@@ -1216,17 +1228,35 @@ proto.gscheduler.Task.prototype.getUuid = function() {
  * @param {string} value
  * @return {!proto.gscheduler.Task} returns this
  */
-proto.gscheduler.Task.prototype.setUuid = function(value) {
+proto.gscheduler.Task.prototype.setNextTask = function(value) {
   return jspb.Message.setProto3StringField(this, 9, value);
 };
 
 
 /**
- * optional int64 cron_id = 10;
+ * optional string uuid = 10;
+ * @return {string}
+ */
+proto.gscheduler.Task.prototype.getUuid = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.gscheduler.Task} returns this
+ */
+proto.gscheduler.Task.prototype.setUuid = function(value) {
+  return jspb.Message.setProto3StringField(this, 10, value);
+};
+
+
+/**
+ * optional int64 cron_id = 11;
  * @return {number}
  */
 proto.gscheduler.Task.prototype.getCronId = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 10, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 11, 0));
 };
 
 
@@ -1235,16 +1265,16 @@ proto.gscheduler.Task.prototype.getCronId = function() {
  * @return {!proto.gscheduler.Task} returns this
  */
 proto.gscheduler.Task.prototype.setCronId = function(value) {
-  return jspb.Message.setProto3IntField(this, 10, value);
+  return jspb.Message.setProto3IntField(this, 11, value);
 };
 
 
 /**
- * optional bool enabled = 11;
+ * optional bool enabled = 12;
  * @return {boolean}
  */
 proto.gscheduler.Task.prototype.getEnabled = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 11, false));
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 12, false));
 };
 
 
@@ -1253,7 +1283,7 @@ proto.gscheduler.Task.prototype.getEnabled = function() {
  * @return {!proto.gscheduler.Task} returns this
  */
 proto.gscheduler.Task.prototype.setEnabled = function(value) {
-  return jspb.Message.setProto3BooleanField(this, 11, value);
+  return jspb.Message.setProto3BooleanField(this, 12, value);
 };
 
 
