@@ -839,7 +839,7 @@ proto.gscheduler.Task.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
     description: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    sysDescription: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : [],
     schedule: jspb.Message.getFieldWithDefault(msg, 4, ""),
     timeout: jspb.Message.getFieldWithDefault(msg, 5, 0),
     app: jspb.Message.getFieldWithDefault(msg, 6, ""),
@@ -893,8 +893,10 @@ proto.gscheduler.Task.deserializeBinaryFromReader = function(msg, reader) {
       msg.setDescription(value);
       break;
     case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setSysDescription(value);
+      var value = msg.getTagsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
@@ -971,12 +973,9 @@ proto.gscheduler.Task.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getSysDescription();
-  if (f.length > 0) {
-    writer.writeString(
-      3,
-      f
-    );
+  f = message.getTagsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
   f = message.getSchedule();
   if (f.length > 0) {
@@ -1074,21 +1073,25 @@ proto.gscheduler.Task.prototype.setDescription = function(value) {
 
 
 /**
- * optional string sys_description = 3;
- * @return {string}
+ * map<string, string> tags = 3;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
  */
-proto.gscheduler.Task.prototype.getSysDescription = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+proto.gscheduler.Task.prototype.getTagsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 3, opt_noLazyCreate,
+      null));
 };
 
 
 /**
- * @param {string} value
+ * Clears values from the map. The map will be non-null.
  * @return {!proto.gscheduler.Task} returns this
  */
-proto.gscheduler.Task.prototype.setSysDescription = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
-};
+proto.gscheduler.Task.prototype.clearTagsMap = function() {
+  this.getTagsMap().clear();
+  return this;};
 
 
 /**
