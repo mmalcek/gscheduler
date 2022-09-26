@@ -16,6 +16,8 @@ type (
 		svc        *string
 		genCrt     *string
 		serverName *string
+		app        *string
+		path       *string
 	}
 )
 
@@ -26,6 +28,8 @@ func main() {
 	flags.svc = flag.String("service", "", "Control the system service (start, stop, install, uninstall)")
 	flags.genCrt = flag.String("gencrt", "", "Generate SSL certificates")
 	flags.serverName = flag.String("server", "", "Server name")
+	flags.app = flag.String("app", "", "Application name that should be added to config")
+	flags.path = flag.String("path", "", "Application path that should be added to config. If empty -app App will be delted from config")
 	flag.Parse()
 
 	if flagProcessed, err := processFlags(flags); err != nil {
@@ -72,8 +76,19 @@ func main() {
 }
 
 func processFlags(flags tFlags) (flagProcessed bool, err error) {
-	if *flags.genCrt != "" {
+	if *flags.genCrt != "" { // Generate SSL certificates
 		crtCreate(*flags.genCrt, *flags.serverName)
+		return true, nil
+	} else if *flags.app != "" {
+		if *flags.path != "" { // Add application to config file
+			if err := config.addApp(*flags.app, *flags.path); err != nil {
+				return false, err
+			}
+		} else { // Delete application from config file
+			if err := config.delApp(*flags.app); err != nil {
+				return false, err
+			}
+		}
 		return true, nil
 	}
 	return false, nil

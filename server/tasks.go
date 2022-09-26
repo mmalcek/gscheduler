@@ -293,7 +293,7 @@ func (tsk *tTasks) validateInput(task *pb.Task) error {
 		}
 	}
 	if !knownApp {
-		return fmt.Errorf("errApp-unknown")
+		return fmt.Errorf("errApp-missingInConfig")
 	}
 
 	// Validate UUID

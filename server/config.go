@@ -24,45 +24,61 @@ type (
 	}
 )
 
-var config tConfig
-
-func configInit() error {
-	config.ServerAddress = "127.0.0.1"
-	config.ServerPort = "50051"
-	config.LogFolder = ""
-	config.LogLimit = -1
-	config.Apps = make(map[string]string, 0)
-	if err := getConfigFile(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func getConfigFile() error {
+func (c *tConfig) loadConfig() error {
 	configData, err := os.ReadFile(filepath.Join(filepath.Dir(os.Args[0]), "config.yaml"))
 	if err != nil {
 		return err
 	}
-	if err := yaml.Unmarshal(configData, &config); err != nil {
+	if err := yaml.Unmarshal(configData, &c); err != nil {
 		return err
 	}
-
 	return nil
 }
 
-func fixConfigPaths() {
+func (c *tConfig) fixConfigPaths() {
 	if config.TasksFile == "" {
-		config.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), "tasks.yaml")
+		c.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), "tasks.yaml")
 	}
-	if !filepath.IsAbs(config.TasksFile) {
-		config.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), config.TasksFile)
+	if !filepath.IsAbs(c.TasksFile) {
+		c.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), c.TasksFile)
 	}
-	if !filepath.IsAbs(config.LogFolder) {
-		config.LogFolder = filepath.Join(filepath.Dir(os.Args[0]), config.LogFolder)
+	if !filepath.IsAbs(c.LogFolder) {
+		c.LogFolder = filepath.Join(filepath.Dir(os.Args[0]), c.LogFolder)
 	}
 	for k, v := range config.Apps {
 		if !filepath.IsAbs(v) {
-			config.Apps[k] = filepath.Join(filepath.Dir(os.Args[0]), v)
+			c.Apps[k] = filepath.Join(filepath.Dir(os.Args[0]), v)
 		}
 	}
+}
+
+func (c *tConfig) addApp(name string, app string) error {
+	if err := config.loadConfig(); err != nil {
+		logger.Errorf("configLoadFailed: %s", err.Error())
+	}
+	app = filepath.ToSlash(app)
+	c.Apps[name] = app
+	configData, err := yaml.Marshal(c)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(filepath.Dir(os.Args[0]), "config.yaml"), configData, 0644); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *tConfig) delApp(name string) error {
+	if err := config.loadConfig(); err != nil {
+		logger.Errorf("configLoadFailed: %s", err.Error())
+	}
+	delete(c.Apps, name)
+	configData, err := yaml.Marshal(c)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(filepath.Dir(os.Args[0]), "config.yaml"), configData, 0644); err != nil {
+		return err
+	}
+	return nil
 }

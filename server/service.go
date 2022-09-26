@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	config        = tConfig{ServerAddress: "127.0.0.1", ServerPort: "50051", LogLimit: -1, Apps: map[string]string{}}
 	scheduler     = tCron{cron: cron.New(cron.WithChain(cron.SkipIfStillRunning(cron.DefaultLogger)))}
 	tasks         = &tTasks{tasks: make([]*pb.Task, 0)}
 	tasksCTX      = tTasksCtxMap{taskCtx: make(map[string]*tTaskState, 0)}
@@ -20,11 +21,10 @@ var (
 )
 
 func (p *program) run() {
-	if err := configInit(); err != nil {
-		logger.Errorf("configInitFailed: %s\r\nStarting with default configuration", err.Error())
+	if err := config.loadConfig(); err != nil {
+		logger.Errorf("configLoadFailed: %s", err.Error())
 	}
-	fixConfigPaths() // Fix paths in config (relative to absolute)
-
+	config.fixConfigPaths()   // Fix paths in config (relative to absolute)
 	go tasksLogWatch(taskLog) // Watch tasks (stdOut,stdErr) channel. Send to logWatchChans and write to fileLog
 	if err := tasks.load(); err != nil {
 		logger.Errorf("loadTasks: %v", err.Error())
