@@ -211,6 +211,10 @@ func execCommand(request *pb.Task) (*pb.ExecStatus, error) {
 	ctx, can := context.WithTimeout(context.Background(), time.Duration(request.GetTimeout())*time.Second)
 	defer can()
 	cmd := exec.CommandContext(ctx, config.Apps[request.GetApp()], request.GetArgs()...)
+	cmd.Dir = filepath.Dir(config.Apps[request.GetApp()]) // Set working directory to app path
+	if request.GetWorkDir() != "" {                       // If working directory is set - use it
+		cmd.Dir = request.GetWorkDir()
+	}
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 	if err := cmd.Start(); err != nil {
