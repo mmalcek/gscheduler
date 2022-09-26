@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -92,6 +93,7 @@ func (cr *tCron) taskJob(task *pb.Task) func() {
 
 		// Run task with context
 		cmd := exec.CommandContext(tasksCTX.get(task.GetUuid()).ctx, config.Apps[task.GetApp()], task.GetArgs()...)
+		cmd.Dir = filepath.Dir(config.Apps[task.GetApp()]) // Set working directory to app path
 		stdoutIn, err := cmd.StdoutPipe()
 		if err != nil {
 			taskLog <- genMsg(task, fmt.Sprintf("stdoutPipe: %v", err.Error()), "error")

@@ -46,7 +46,6 @@ func (tsk *tTasks) load() error {
 		if err := tasks.validateUUID(tsk.tasks[i].Uuid); err != nil {
 			return fmt.Errorf("taskUUID: %s, err: %s", tsk.tasks[i].GetName(), err.Error())
 		}
-		fmt.Println(config.Apps[tsk.tasks[i].App])
 	}
 	return nil
 }
