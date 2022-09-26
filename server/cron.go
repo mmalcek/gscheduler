@@ -203,7 +203,7 @@ func genMsg(task *pb.Task, msg string, msgType string) *pb.TaskLog {
 
 // Single command execution without schedule
 func execCommand(request *pb.Task) (*pb.ExecStatus, error) {
-	taskLog <- &pb.TaskLog{Name: "execCmd", SysDescription: request.GetSysDescription(), Message: "started", Type: "info", Timestamp: time.Now().UnixMicro()}
+	taskLog <- &pb.TaskLog{Name: "execCmd", Tags: request.GetTags(), Message: "started", Type: "info", Timestamp: time.Now().UnixMicro()}
 	var outb, errb bytes.Buffer
 	ctx, can := context.WithTimeout(context.Background(), time.Duration(request.GetTimeout())*time.Second)
 	defer can()
