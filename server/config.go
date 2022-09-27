@@ -35,23 +35,6 @@ func (c *tConfig) loadConfig() error {
 	return nil
 }
 
-func (c *tConfig) fixConfigPaths() {
-	if config.TasksFile == "" {
-		c.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), "tasks.yaml")
-	}
-	if !filepath.IsAbs(c.TasksFile) {
-		c.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), c.TasksFile)
-	}
-	if !filepath.IsAbs(c.LogFolder) {
-		c.LogFolder = filepath.Join(filepath.Dir(os.Args[0]), c.LogFolder)
-	}
-	for k, v := range config.Apps {
-		if !filepath.IsAbs(v) {
-			c.Apps[k] = filepath.Join(filepath.Dir(os.Args[0]), v)
-		}
-	}
-}
-
 func (c *tConfig) addApp(name string, app string) error {
 	if err := config.loadConfig(); err != nil {
 		logger.Errorf("configLoadFailed: %s", err.Error())
@@ -81,4 +64,24 @@ func (c *tConfig) delApp(name string) error {
 		return err
 	}
 	return nil
+}
+
+func (c *tConfig) fixConfigPaths() {
+	if config.TasksFile == "" {
+		c.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), "tasks.yaml")
+	}
+	c.TasksFile = filepath.FromSlash(os.ExpandEnv(c.TasksFile))
+	if !filepath.IsAbs(c.TasksFile) {
+		c.TasksFile = filepath.Join(filepath.Dir(os.Args[0]), c.TasksFile)
+	}
+	c.LogFolder = filepath.FromSlash(os.ExpandEnv(c.LogFolder))
+	if !filepath.IsAbs(c.LogFolder) {
+		c.LogFolder = filepath.Join(filepath.Dir(os.Args[0]), c.LogFolder)
+	}
+	for k, v := range config.Apps {
+		v = filepath.FromSlash(os.ExpandEnv(v))
+		if !filepath.IsAbs(v) {
+			c.Apps[k] = filepath.Join(filepath.Dir(os.Args[0]), v)
+		}
+	}
 }

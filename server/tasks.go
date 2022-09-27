@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sync"
 	"time"
@@ -26,6 +27,9 @@ func (tsk *tTasks) load() error {
 	defer tsk.mutex.Unlock()
 	// Create file if not exists
 	if _, err := os.Stat(config.TasksFile); os.IsNotExist(err) {
+		if err := os.MkdirAll(filepath.Dir(config.TasksFile), 0660); err != nil {
+			return fmt.Errorf("createDir: %v", err.Error())
+		}
 		if _, err := os.Create(config.TasksFile); err != nil {
 			return fmt.Errorf("createFile: %v", err.Error())
 		}
