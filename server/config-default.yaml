@@ -2,7 +2,7 @@ server_address: "127.0.0.1"
 server_port: "50051"
 tasks_file: "${PROGRAMDATA}/gScheduler/tasks.yaml"
 log_folder: "${PROGRAMDATA}/gScheduler/logs"
-log_limit: 10
+log_limit: 90
 ssl:
     crt: ""
     key: ""
