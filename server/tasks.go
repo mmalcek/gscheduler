@@ -247,12 +247,12 @@ func (tsk *tTasks) validateInput(task *pb.Task) error {
 	if task.GetName() == "" {
 		return fmt.Errorf("errName-empty")
 	}
-	matchName, err := regexp.MatchString(`^[A-Za-z0-9_ ]+$`, task.GetName())
+	matchName, err := regexp.MatchString(`^[A-Za-z0-9()_ +-=.]+$|^$`, task.GetName())
 	if err != nil {
 		return fmt.Errorf("errName-%s", err.Error())
 	}
 	if !matchName {
-		return fmt.Errorf("errName-only[A-Za-z0-9]_spaceAllowed")
+		return fmt.Errorf("errName-only[A-Za-z0-9]_space and ()_+-=. allowed")
 	}
 	if len(task.GetName()) > 128 {
 		return fmt.Errorf("errName-max128chars")
@@ -265,12 +265,12 @@ func (tsk *tTasks) validateInput(task *pb.Task) error {
 		}
 	}
 	// Validate description
-	matchDesc, err := regexp.MatchString(`^[A-Za-z0-9_ ]+$|^$`, task.GetDescription())
+	matchDesc, err := regexp.MatchString(`^[A-Za-z0-9()_ +-=.]+$|^$`, task.GetDescription())
 	if err != nil {
 		return fmt.Errorf("errDescription-%s", err.Error())
 	}
 	if !matchDesc {
-		return fmt.Errorf("errDescription-only[A-Za-z0-9]_spaceAllowed")
+		return fmt.Errorf("errDescription-only[A-Za-z0-9]_space and ()_+-=. allowed")
 	}
 	if len(task.GetDescription()) > 256 {
 		return fmt.Errorf("errDescription-max256chars")
